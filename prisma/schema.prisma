@@ -1,35 +1,121 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
-model Escola {
-  id        Int    @id @default(autoincrement())
-  nome      String
-  internet  Boolean @default(false)
-  laboratorio Boolean @default(false)
-  zona      String
-  computadoresPorAluno Float @default(0)
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
- 
-model User { 
-  id String @id @default(cuid()) 
-  email String @unique 
-  password String 
-  createdAt DateTime @default(now()) 
-} 
+model corpo_discente {
+  id              BigInt   @id @default(autoincrement())
+  qt_mat_fund_af  Int?
+  qt_mat_fund_int Int?
+  qt_mat_med      Int?
+  qt_mat_med_int  Int?
+  qt_mat_eja_fund Int?
+  qt_mat_eja_med  Int?
+  escola          escola[]
+}
 
-model Metric { 
-  id String @id @default(cuid()) 
-  label String 
-  value Float 
-  createdAt DateTime @default(now()) 
+model corpo_docente {
+  id                BigInt   @id @default(autoincrement())
+  qt_prof_monitores Int?
+  in_prof_monitores Boolean?
+  qt_tur_eja_fund   Int?
+  qt_tur_eja_med    Int?
+  escola            escola[]
+}
 
-} 
+model endereco {
+  id             BigInt   @id @default(autoincrement())
+  ds_endereco    String?  @db.VarChar(150)
+  nu_endereco    String?  @db.VarChar(50)
+  ds_complemento String?  @db.VarChar(100)
+  no_bairro      String?  @db.VarChar(100)
+  co_cep         String?  @db.VarChar(15)
+  nu_ddd         Int?
+  nu_telefone    String?  @db.VarChar(20)
+  sg_uf          String?  @db.VarChar(2)
+  escola         escola[]
+}
 
- 
+model energia {
+  id                        BigInt   @id @default(autoincrement())
+  in_energia_rede_publica   Boolean?
+  in_energia_gerador_fossil Boolean?
+  in_energia_renovavel      Boolean?
+  in_energia_inexistente    Boolean?
+  escola                    escola[]
+}
+
+model equipamentos {
+  id                     BigInt   @id @default(autoincrement())
+  in_equip_nenhum        Boolean?
+  in_equip_impressor     Boolean?
+  in_comp_portatil_aluno Boolean?
+  in_tablet_aluno        Boolean?
+  qt_desktop_aluno       Int?
+  qt_tablet_aluno        Int?
+  escola                 escola[]
+}
+
+model escola {
+  id                          BigInt                @id @default(autoincrement())
+  no_entidade                 String                @db.VarChar(150)
+  co_entidade                 BigInt?
+  tp_dependencia              Int?
+  tp_localizacao              Int?
+  tp_localizacao_diferenciada Int?
+  tp_situacao_funcionamento   Int?
+  no_regiao                   String?               @db.VarChar(50)
+  co_regiao                   Int?
+  id_endereco                 BigInt?
+  id_energia                  BigInt?
+  id_infraestrutura_geral     BigInt?
+  id_infraestrutura_rede      BigInt?
+  id_equipamentos             BigInt?
+  id_corpo_docente            BigInt?
+  id_corpo_discente           BigInt?
+  corpo_discente              corpo_discente?       @relation(fields: [id_corpo_discente], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  corpo_docente               corpo_docente?        @relation(fields: [id_corpo_docente], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  endereco                    endereco?             @relation(fields: [id_endereco], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  energia                     energia?              @relation(fields: [id_energia], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  equipamentos                equipamentos?         @relation(fields: [id_equipamentos], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  infraestrutura_geral        infraestrutura_geral? @relation(fields: [id_infraestrutura_geral], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  infraestrutura_rede         infraestrutura_rede?  @relation(fields: [id_infraestrutura_rede], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model infraestrutura_geral {
+  id                         BigInt   @id @default(autoincrement())
+  in_banheiro                Boolean?
+  in_biblioteca              Boolean?
+  in_cozinha                 Boolean?
+  in_refeitorio              Boolean?
+  in_laboratorio_ciencias    Boolean?
+  in_laboratorio_informatica Boolean?
+  qt_salas_existentes        Int?
+  escola                     escola[]
+}
+
+model infraestrutura_rede {
+  id                             BigInt   @id @default(autoincrement())
+  in_internet                    Boolean?
+  in_internet_alunos             Boolean?
+  in_internet_administrativo     Boolean?
+  in_internet_aprendizagem       Boolean?
+  in_acesso_internet_computador  Boolean?
+  in_aces_internet_disp_pessoais Boolean?
+  tp_rede_local                  Boolean?
+  in_banda_larga                 Boolean?
+  escola                         escola[]
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(255)
+  email     String    @unique @db.VarChar(255)
+  password  String    @db.VarChar(255)
+  createdAt DateTime? @default(now()) @db.Timestamp(6)
+}
