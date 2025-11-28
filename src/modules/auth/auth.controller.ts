@@ -12,6 +12,7 @@ export async function login(req: Request, res: Response) {
 }
 
 export async function register(req: Request, res: Response) {
+  console.log("BODY RECEBIDO:", req.body);
   const { name, email, password } = req.body;
 
   const result = await authService.register(name, email, password);
